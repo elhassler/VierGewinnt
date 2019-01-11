@@ -1,0 +1,36 @@
+header {
+    height: auto;
+    width: 1325px;
+    background-color: black;
+    margin: 0;
+    padding: 10px;
+    text-align: center;
+}
+
+header h1 {
+    color: white;
+}
+
+body #login{
+    display: block;
+    margin-top: 100px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 22%;
+    text-align: center;
+}
+ body #login label {
+     float: left;
+ }
+
+ body #login input {
+     float: right;
+ }
+ 
+ body #login button {
+     float: right;
+ }
+
+ body #login a {
+     float: left;
+ }
