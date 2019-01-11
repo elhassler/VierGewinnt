@@ -1,3 +1,27 @@
-<p>
-  registration works!
-</p>
+<body>
+    <header>
+        <h1>VierGewinnt</h1>
+    </header>
+    <main>
+      <div ng-app="">
+          <form id="registration">
+            <label for name>Benutzername:</label>
+            <input type="text" ng-model="name"><br><br>
+            <label for name>Vorname:</label>
+            <input type="text" ng-model="vname"><br><br>
+            <label for name>Nachname:</label>
+            <input type="text" ng-model="nname"><br><br>
+            <label for password>Passwort:</label>
+            <input type="password" ng-model="password"><br><br>
+            <label for name>Passwort wiederholen:</label>
+            <input type="password" ng-model="password2"><br><br>
+            <br><br>
+            <button ng-click="submit()">Login</button>
+            <a routerLink="/LoginComponent" routerLinkActive="active">Ich habe bereits ein Konto...</a>
+          </form>
+      </div>
+    </main>
+    <footer>
+      <p>von Elisabeth Hassler, Alexander Widmann <span>Webtechnologien W19</span></p>
+    </footer>
+</body>
