@@ -1,0 +1,13 @@
+#gameboard{
+    border: 2px solid black;
+    table-layout: fixed;
+    width: 800px;
+    padding:0px;
+    margin:0px;
+}
+
+#gameboard td{
+    border: 1px solid black;
+    width: 100px;
+    height: 100px;
+}

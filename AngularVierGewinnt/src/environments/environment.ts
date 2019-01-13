@@ -3,8 +3,40 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  ws_url: "http://localhost:5000",
 };
+export enum InMsgType{
+  ErrorMessage ="error",
+  CancelGame ="cancel",
+  UpdateGameList="updateGameList",
+  GameRoom="gameRoom",
+  InvalidMove="invalidMove",
+  GameOver="gameOver",
+  Message="message",
+  InitPlayer="initPlayer",
+  Winner="winner",
+  UpdateGameBoard="updateGameBoard"
+}
+export enum OutMsgType{
+  Connection="connection",
+  Disconnect="disconnect",
+  PlayMove="playMove",
+  JoinGame="joinGame",
+  CreateGame="createGame",
+  EndGame="endGame",
+  InitRooms="initGameRooms",
+  
+}
+
+export class MessageObject{
+  type:String;
+  data:Object;
+  constructor(t,d){
+    this.type=t;
+    this.data=d;
+  }
+}
 
 /*
  * For easier debugging in development mode, you can import the following file
