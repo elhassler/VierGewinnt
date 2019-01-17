@@ -6,15 +6,15 @@
       <div ng-app="">
           <form id="registration">
             <label for name>Benutzername:</label>
-            <input type="text" ng-model="name"><br><br>
+            <input type="text" id="bname"><br><br>
             <label for name>Vorname:</label>
-            <input type="text" ng-model="vname"><br><br>
+            <input type="text" id="vname"><br><br>
             <label for name>Nachname:</label>
-            <input type="text" ng-model="nname"><br><br>
+            <input type="text" id="nname"><br><br>
             <label for password>Passwort:</label>
-            <input type="password" ng-model="password"><br><br>
+            <input type="password" id="password1"><br><br>
             <label for name>Passwort wiederholen:</label>
-            <input type="password" ng-model="password2"><br><br>
+            <input type="password" id="password2"><br><br>
             <br><br>
             <button ng-click="submit()">Login</button>
             <a routerLink="/LoginComponent" routerLinkActive="active">Ich habe bereits ein Konto...</a>
