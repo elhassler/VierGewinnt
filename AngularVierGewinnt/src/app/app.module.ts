@@ -15,7 +15,7 @@ const appRoutes: Routes = [
   { path: 'RegistrationComponent', component: RegistrationComponent},
   { path: 'Gamescreen/:gameId', component: GamescreenComponent},
   { path: 'Matchmaking', component: MatchmakingComponent},
-  { path: '', redirectTo: 'Matchmaking', pathMatch: 'full'}
+  { path: '', redirectTo: 'LoginComponent', pathMatch: 'full'}
 ];
 
 @NgModule({

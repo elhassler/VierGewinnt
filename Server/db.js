@@ -1,4 +1,3 @@
-let cfg = require('./config.json')
 let mysql = require('mysql');
 
 let _db;
@@ -7,10 +6,10 @@ let initDb = new Promise((resolve, reject) => {
 
     // make sure to import 'db_import/galleryDB.sql' into your MySQL database first
     _db = mysql.createConnection({
-      host     : "localhost",
-      user     : "root",
-      password : "",
-      database : ""
+        host     : "localhost",
+        user     : "root",
+        password : "Webtech1234@",
+        database : "login"
     });
 
     /*
@@ -29,15 +28,19 @@ let initDb = new Promise((resolve, reject) => {
             reject();
             return;
         }
-        /*fehler auftritt, resolven wir die Verbindungsanfrage.
-        * Wenn kein 
+        /*
+        * Wenn kein fehler auftritt, resolven wir die Verbindungsanfrage.
         */
         console.log("Database is connected...");
+        _db.query("SELECT * FROM logindaten", function(err, result){
+            if(err) throw err;
+            console.log(result);
+        })
         resolve();
       });
 });
-
-function getDb() {
+   
+/*function getDb() {
     if (!_db) {
         console.log("Db has not been initialized. Please call init first.");
         return;
@@ -49,3 +52,4 @@ module.exports = {
     getDb,
     initDb
 };
+*/
