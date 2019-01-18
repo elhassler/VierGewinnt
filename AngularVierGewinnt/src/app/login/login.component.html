@@ -3,16 +3,16 @@
         <h1>VierGewinnt</h1>
     </header>
     <main>
-          <form [[formGroup]="loginForm">
-            <label for name>Benutzername:</label>
-            <input type="text" id="name" placeholder="Benutzername..."> required<br><br>
-            <label for password>Passwort:</label>
-            <input type="password" id="pw" placeholder="Passwort..." required>
-            <br><br><br>
-            <button (click)="login()">Login</button>
-            <a routerLink="/RegistrationComponent" routerLinkActive="active">Registrieren...</a>
-            <div id="logMessage">{{loginMessage}}</div>
-          </form>
+      <form id="loginform" (submit)="login($event)">
+        <label for name>Benutzername:</label>
+        <input type="text" id="name" placeholder="Benutzername..."required><br><br>
+        <label for password>Passwort:</label>
+        <input type="password" id="pw" placeholder="Passwort..." required>
+        <br><br><br>
+        <input type="submit" value="Login"/> 
+        <a routerLink="/RegistrationComponent" routerLinkActive="active">Registrieren...</a>
+      
+      </form>
     </main>
     <footer>
       <p>von Elisabeth Hassler, Alexander Widmann <span>Webtechnologien W19</span></p>

@@ -28,19 +28,20 @@ let initDb = new Promise((resolve, reject) => {
             reject();
             return;
         }
+        console.log("Database is connected...");
         /*
         * Wenn kein fehler auftritt, resolven wir die Verbindungsanfrage.
-        */
-        console.log("Database is connected...");
+        
+        
         _db.query("SELECT * FROM logindaten", function(err, result){
             if(err) throw err;
             console.log(result);
-        })
+        })*/
         resolve();
       });
 });
    
-/*function getDb() {
+function getDb() {
     if (!_db) {
         console.log("Db has not been initialized. Please call init first.");
         return;
@@ -52,4 +53,3 @@ module.exports = {
     getDb,
     initDb
 };
-*/

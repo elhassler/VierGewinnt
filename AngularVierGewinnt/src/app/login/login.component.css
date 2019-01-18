@@ -8,7 +8,7 @@ header h1 {
     color: white;
 }
 
-main #login{
+main #loginform{
     padding-top: 100px;
     display: block;
     margin-left: auto;
@@ -16,11 +16,11 @@ main #login{
     width: 25%;
     text-align: center;
 }
-main #login label, a{
+main #loginform label, a{
      float: left;
  }
 
-main #login input, button {
+main #loginform input, button {
      float: right;
  }
 
