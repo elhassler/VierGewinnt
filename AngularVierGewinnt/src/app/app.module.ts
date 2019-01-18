@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { RegistrationComponent } from './registration/registration.component';
 import { WebsocketService } from './web-socket.service';
 import { HttpClientModule } from '@angular/common/http';
+import {CookieService} from 'ngx-cookie-service';
 
 const appRoutes: Routes = [
   { path: 'LoginComponent', component: LoginComponent},
@@ -36,7 +37,7 @@ const appRoutes: Routes = [
       { enableTracing: true } // <-- debugging purposes only
     )
   ],
-  providers: [WebsocketService],
+  providers: [WebsocketService, CookieService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

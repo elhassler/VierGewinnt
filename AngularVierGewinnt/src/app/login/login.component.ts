@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-login',
@@ -9,7 +10,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class LoginComponent implements OnInit {
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private CookieService: CookieService) { }
 
   ngOnInit() {
   }
@@ -30,6 +31,13 @@ export class LoginComponent implements OnInit {
     };
     this.http.post("http://localhost:5001/login",jsonO).subscribe((response)=>{
       console.log('response from post data is ', response);
+      //weiterleitn und cookie erstellen
+      let tmp=JSON.parse(JSON.stringify(response))
+      let authObj={
+        username:username,
+        token:tmp.Data.token
+      }
+      this.CookieService.set("auth",JSON.stringify(authObj));
     },(error)=>{
       console.log('error during post is ', error)
     });

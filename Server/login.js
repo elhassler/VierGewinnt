@@ -1,5 +1,6 @@
 
 let app = require('express')();
+let passwordHash =require('password-hash'); 
 const dbModule = require("./db");
 let db;
 const cors = require('cors');
@@ -31,6 +32,8 @@ app.post("/login", (req, res) => {
         }else if( result.length == 0  ) {
             res.status(401).json({ status:401, message: "login failed" });
         }else if (pw == result[0].passwort) {
+            //}else if(passwordHash.verify(pw,result[0].passwort)){
+                //registrieren pw speichern:passwordHash.generate(pw);
             /* 
             * Wenn der login erfolgreich war
             * erzeugen wir eine Zufallszahl (0-999998)
