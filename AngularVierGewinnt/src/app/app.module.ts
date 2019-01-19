@@ -13,11 +13,11 @@ import { HttpClientModule } from '@angular/common/http';
 import {CookieService} from 'ngx-cookie-service';
 
 const appRoutes: Routes = [
-  { path: 'LoginComponent', component: LoginComponent},
-  { path: 'RegistrationComponent', component: RegistrationComponent},
+  { path: 'Login', component: LoginComponent},
+  { path: 'Registration', component: RegistrationComponent},
   { path: 'Gamescreen/:gameId', component: GamescreenComponent},
   { path: 'Matchmaking', component: MatchmakingComponent},
-  { path: '', redirectTo: 'LoginComponent', pathMatch: 'full'}
+  { path: '', redirectTo: 'Login', pathMatch: 'full'}
 ];
 
 @NgModule({

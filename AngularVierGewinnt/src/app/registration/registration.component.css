@@ -1,14 +1,4 @@
-header {
-    background-color: black;
-    height: 100px;
-}
-
-header h1 {
-    text-align: center;
-    color: white;
-}
-
-main #registration{
+main #registrationform{
     padding-top: 100px;
     display: block;
     margin-left: auto;
@@ -16,28 +6,10 @@ main #registration{
     width: 25%;
     text-align: center;
 }
-main #registration label, a{
+main #registrationform label, a{
      float: left;
  }
 
-main #registration input, button {
+main #registrationform input, button {
      float: right;
  }
-
-footer {
-    bottom: 0;
-    position: absolute;
-    background-color: black;
-    color: white;
-    width: 100%;
-    height: 100px;
-}
-
-footer p {
-    margin-left: 20px;
-    margin-right: 20px;
-}
-
-footer span {
-    float:right;
-}

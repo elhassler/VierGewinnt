@@ -1,22 +1,14 @@
-<body>
-    <header>
-        <h1>VierGewinnt</h1>
-    </header>
     <main>
       <form id="loginform" (submit)="login($event)">
         <label for name>Benutzername:</label>
-        <input type="text" id="name" placeholder="Benutzername..."required><br><br>
+        <input type="text" id="uname1" placeholder="Username..."required><br><br>
         <label for password>Passwort:</label>
-        <input type="password" id="pw" placeholder="Passwort..." required>
+        <input type="password" id="pw1" placeholder="Password..." required>
         <br><br><br>
         <input type="submit" value="Login"/> 
-        <a routerLink="/RegistrationComponent" routerLinkActive="active">Registrieren...</a>
+        <a routerLink="/Registration" routerLinkActive="active">Registration...</a>
       </form>
     </main>
-    <footer>
-      <p>von Elisabeth Hassler, Alexander Widmann <span>Webtechnologien W19</span></p>
-    </footer>
-</body>
 
         
 
