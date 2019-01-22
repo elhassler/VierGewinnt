@@ -6,6 +6,12 @@ export const environment = {
   production: false,
   ws_url: "http://localhost:5000",
 };
+export enum MsgTypes{
+  Message="message",
+  Game="game",
+  Matchmaking="matchmaking",
+  PlayerLeft="playerleft"
+}
 export enum InMsgType{
   ErrorMessage ="error",
   CancelGame ="cancel",
@@ -13,14 +19,12 @@ export enum InMsgType{
   GameRoom="gameRoom",
   InvalidMove="invalidMove",
   GameOver="gameOver",
-  Message="message",
-  InitPlayer="initPlayer",
   Winner="winner",
-  UpdateGameBoard="updateGameBoard"
+  UpdateGameBoard="updateGameBoard",
+  InitPlayer="initPlayer",
 }
 export enum OutMsgType{
-  Connection="connection",
-  Disconnect="disconnect",
+ 
   PlayMove="playMove",
   JoinGame="joinGame",
   CreateGame="createGame",

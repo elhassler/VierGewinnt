@@ -6,6 +6,14 @@ let io = require('socket.io')(http);
 
 var gameCollection=[];
 
+const msgTypes={
+    Message:"message",
+    Connection:"connection",
+    Disconnect:"disconnect",
+    Game:"game",
+    Matchmaking:"matchmaking",
+    PlayerLeft:"playerleft"
+}
 const outMsgType={
     ErrorMessage :"error",
     CancelGame :"cancel",
@@ -16,12 +24,8 @@ const outMsgType={
     UpdateGameBoard:"updateGameBoard",
     Winner:"winner"
 };
-
 const inMsgType={
     InitPlayer:"initPlayer",
-    Message:"message",
-    Connection:"connection",
-    Disconnect:"disconnect",
     PlayMove:"playMove",
     JoinGame:"joinGame",
     CreateGame:"createGame",
@@ -29,124 +33,208 @@ const inMsgType={
     InitRooms:"initGameRooms",
 
 };
-
-
 const mmRoom="mmRoom";
 let gameRooms=[];
-let wow=0;
 
-io.on(inMsgType.Connection, (socket) => {
-    socket.username=wow;
-    wow++;
-    console.log("hello user "+socket.username);
+http.listen(5000, () => {
+    console.log('started on port 5000');
+});
+
+io.on(msgTypes.Connection, (socket) => {
+    console.log("User connected");
     socket.join(mmRoom);
 
-    socket.on(inMsgType.Disconnect, function(){
+    socket.on(msgTypes.Disconnect, function(){
         console.log('user disconnected');
        Object.keys(io.sockets.adapter.rooms).forEach(function(room){
             io.to(room).emit(outMsgType.CancelGame,'a Player left');
         });
     });
-    socket.on(inMsgType.Message, function(message) {
+    /*
+    socket.on(msgTypes.Message, function(message) {
         console.log("Message Received: " + message);
         socket.emit(InMsgType.Message, message);    
-    });
-        
-    socket.on(inMsgType.InitRooms, function() {
-        console.log("Init Rooms");
-        let tmpObj= new Object();
-        tmpObj.command="init";
-        tmpObj.room=gameRooms;       
-        socket.emit(outMsgType.UpdateGameList, tmpObj);    
-    });
-    
-    socket.on(inMsgType.JoinGame,function(newRoom){
-        console.log("join game: "+newRoom);
-        //Leave ALL rooms (except the standard room)
-        leaveRooms(socket);
-        //Join GameRoom (if 1 player is in it)
-        if(Object.keys(io.sockets.adapter.rooms[newRoom].sockets).length==1){
-            socket.join(newRoom);
-            socket.playerid=2;
-            console.log("gohard");
-            socket.emit(outMsgType.GameRoom, newRoom);
-            gameRooms.splice( gameRooms.indexOf(newRoom), 1 );
-            updateGameListEmit('remove',newRoom)
-            
-        }else{
-            socket.emit(outMsgType.ErrorMessage, 'invalidRoomSelected');
+    });*/
+    socket.on(msgTypes.PlayerLeft,function(msg){
+        console.log(msg);
+        let index=getGameIndex(msg.room);
+        if(index!==null){
+          gameRooms.splice(index,1);
+          updateGameListEmit('remove',msg.room);
         }
-    });
-    socket.on(inMsgType.CreateGame,function(){   
-        leaveRooms(socket);
-        let newRoom=createUniqueRoom();
-        gameRooms.push(newRoom);
-        socket.join(newRoom);
-        console.log("createGameRoom: "+newRoom);
-        socket.playerid=1;
-        socket.emit(outMsgType.GameRoom, newRoom);  
-        gameCollection.push(new Game(newRoom,socket.username));
-        updateGameListEmit('add',newRoom);
-    });
-
-    socket.on(inMsgType.EndGame,function(gRoom){
-        console.log("Finishing Game"+gRoom);
-        leaveRooms(socket);
+        leaveRooms(socket);  
         socket.join(mmRoom);
     });
-
-    socket.on(inMsgType.InitPlayer, function(gRoom){
-        console.log("Init Player for room "+gRoom);
-        if(socket.rooms[gRoom]!==undefined){
-            socket.emit(inMsgType.InitPlayer,socket.playerid);
+    socket.on(msgTypes.Matchmaking, function(msg){
+        console.log(msg);
+        if(msg.type===inMsgType.InitRooms){
+            initRooms(socket);
+        }else if(msg.type===inMsgType.CreateGame){
+            createGame(socket);
+        }else if(msg.type===inMsgType.JoinGame){
+            joinGame(socket,msg.room);
         }else{
-            //send wrong room request
-        }
-    });
-
-    socket.on(inMsgType.PlayMove,function(msg){
-        if(Object.keys(socket.rooms).includes(msg.room) && Object.keys(io.sockets.adapter.rooms[msg.room].sockets).length==2){
-            gameIndex=getGameIndex(msg.room);
-            
-            if(socket.username!=gameCollection[gameIndex].lastPlayed){
-                //GAMELOGIC
-                let row=gamelogic.validateInput(gameCollection[gameIndex].gameboard,msg.col);
-                if(row<0){
-                    socket.emit(outMsgType.InvalidMove, 'WRONG MOVE');
-                }else{ 
-                    let tmp=gamelogic.checkForWin(gameCollection[gameIndex].gameboard,row,msg.col,socket.playerid);
-                    if(tmp!=1){
-                        console.log("VALID MOVE");
-                        gameCollection[gameIndex].gameboard[row][msg.col]=socket.playerid;
-                         let tmpObj={
-                            lastPlayer:socket.playerid,
-                            gameBoard:gameCollection[gameIndex].gameboard,
-                        }
-                        io.to(msg.room).emit(outMsgType.UpdateGameBoard,tmpObj);
-                        gameCollection[gameIndex].lastPlayed=socket.username;
-                    }else{
-                        console.log("Game Won by:"+socket.username+" in room:"+msg.room);
-                        io.to(msg.room).emit(outMsgType.Winner,socket.playerid);
-                        leaveRooms(socket);
-                        removeGame(msg.room);
-                        socket.join(mmRoom);
-                    }
+            console.log("Matchmaking:Unknown Command Type");
+                let tmpMsgObj={
+                    type:outMsgType.ErrorMessage,
+                    msg:"unknown matchmaking command: "+msg.type
                 }
-                
-            }else{
-                console.log("NOT YOUR TURN!");
-                socket.emit(outMsgType.InvalidMove, 'notYourTurn');
-            }
-        }else{
-            socket.emit(outMsgType.ErrorMessage, 'noProperGameroom');
+                socket.emit(msgTypes.Matchmaking,tmpMsgObj);
         }
-
+      
     });
-    
+    socket.on(msgTypes.Game, function(msg){
+        console.log(msg);
+        if(msg.type===inMsgType.InitPlayer){
+            initPlayer(socket,msg.room);
+        }else if(msg.type===inMsgType.EndGame){
+            endGame(socket);
+        }else if(msg.type===inMsgType.PlayMove){
+            playMove(socket,msg);
+        }else{
+            console.log("Game:Unknown Command Type");
+            let tmpMsgObj={
+                type:outMsgType.ErrorMessage,
+                msg:"unknown game command: "+msg.type
+            }
+            socket.emit(msgTypes.Game,tmpMsgObj);
+        }
+    }); 
 });
-http.listen(5000, () => {
-    console.log('started on port 5000');
-});
+
+//Matchmaking Message Functions
+function initRooms(socket){
+    console.log("Init Rooms");
+    let tmpMsgObj= {
+        type:outMsgType.UpdateGameList,
+        command:"init",
+        room:gameRooms  
+    }    
+    socket.emit(msgTypes.Matchmaking,tmpMsgObj); 
+}
+
+function createGame(socket){
+    leaveRooms(socket);
+    let newRoom=createUniqueRoom();
+    gameRooms.push(newRoom);
+    socket.join(newRoom);
+    console.log("createGameRoom: "+newRoom);
+    socket.playerid=1;
+    let tmpMsgObj= {
+        type:outMsgType.GameRoom,
+        room:newRoom
+    }
+    socket.emit(msgTypes.Matchmaking,tmpMsgObj);  
+    gameCollection.push(new Game(newRoom,socket.username));
+    updateGameListEmit('add',newRoom);
+}
+function joinGame(socket,room){
+    console.log("join gameroom: "+room);
+    //Join GameRoom (if 1 player is in it)
+    console.log(io.sockets.adapter.rooms[room]);
+    if(io.sockets.adapter.rooms[room]===undefined){
+        gameRooms.splice(getGameIndex(room),1);
+        updateGameListEmit('remove',room);
+    }else if(Object.keys(io.sockets.adapter.rooms[room].sockets).length==1){
+        //Leave ALL rooms (except the standard room)
+        leaveRooms(socket);
+        socket.join(room);
+        socket.playerid=2;
+        let tmpMsgObj={
+            type:outMsgType.GameRoom,
+            room: room
+        };
+        socket.emit(msgTypes.Matchmaking,tmpMsgObj);
+        gameRooms.splice( gameRooms.indexOf(room), 1 );
+        updateGameListEmit('remove',room)
+        
+    }else{
+        let tmpMsgObj={
+            type:outMsgType.ErrorMessage,
+            msg: "invalidRoomSelected"
+        };
+        socket.emit(msgTypes.Matchmaking,tmpMsgObj);
+    }
+}
+
+//Game Message Functions
+function initPlayer(socket,room){
+    console.log("Init Player for room "+room);
+    if(socket.rooms[room]!==undefined){
+        let tmpMsgObj={
+            type:inMsgType.InitPlayer,
+            playerid:socket.playerid 
+        };
+        socket.emit(msgTypes.Game,tmpMsgObj);
+    }else{
+        let tmpMsgObj={
+            type:outMsgType.ErrorMessage,
+            msg:"Failed to InitPlayer"
+        };
+        socket.emit(msgTypes.Game,tmpMsgObj);
+    }
+}
+function endGame(socket,room){
+    console.log("Finishing Game"+room);
+    leaveRooms(socket);
+    socket.join(mmRoom);
+}
+function playMove(socket,msg){
+    if(Object.keys(socket.rooms).includes(msg.room) && Object.keys(io.sockets.adapter.rooms[msg.room].sockets).length==2){
+        gameIndex=getGameIndex(msg.room);
+        if(socket.username!=gameCollection[gameIndex].lastPlayed){
+            //GAMELOGIC
+            let row=gamelogic.validateInput(gameCollection[gameIndex].gameboard,msg.col);
+            if(row<0){
+                let tmpMsgObj={
+                    type:outMsgType.InvalidMove,
+                    msg:'invalid move'
+                }
+                socket.emit(msgTypes.Game,tmpMsgObj);
+            }else{ 
+                let tmp=gamelogic.checkForWin(gameCollection[gameIndex].gameboard,row,msg.col,socket.playerid);
+                if(tmp!=1){
+                    console.log("VALID MOVE");
+                    gameCollection[gameIndex].gameboard[row][msg.col]=socket.playerid;
+                    let tmpMsgObj={
+                        type:outMsgType.UpdateGameBoard,
+                        lastPlayer:socket.playerid,
+                        gameBoard:gameCollection[gameIndex].gameboard
+                    }
+                    io.to(msg.room).emit(msgTypes.Game,tmpMsgObj);
+                    gameCollection[gameIndex].lastPlayed=socket.username;
+                }else{
+                    console.log("Game Won by:"+socket.username+" in room:"+msg.room);
+                    let tmpMsgObj={
+                        type:outMsgType.Winner,
+                        msg:socket.playerid
+                    }
+                    io.to(msg.room).emit(msgTypes.Game,tmpMsgObj);
+                    leaveRooms(socket);
+                    removeGame(msg.room);
+                    socket.join(mmRoom);
+                }
+            }
+            
+        }else{
+            console.log("NOT YOUR TURN!");
+            let tmpMsgObj={
+                type:outMsgType.InvalidMove,
+                msg:'not your turn'
+            }
+            socket.emit(msgTypes.Game,tmpMsgObj);
+        }
+    }else{
+        let tmpMsgObj={
+            type:outMsgType.ErrorMessage,
+            msg:'not a proper gameroom'
+        }
+        socket.emit(msgTypes.Game,tmpMsgObj);
+    }
+
+}
+
+//Helper Functions and Class
 function createUniqueRoom(){
     let tmp=''+Math.floor(Math.random()*900+101);
     if(gameRooms.includes(tmp)){
@@ -154,7 +242,6 @@ function createUniqueRoom(){
     }
     return tmp;
 }
-
 function leaveRooms(socket){
     tmp=Object.values(socket.rooms);
     if(tmp.length> 1){
@@ -165,20 +252,23 @@ function leaveRooms(socket){
             } if(room != socket.id){
                 socket.leave(room);
                 removeGame(room);
-                io.to(room).emit(outMsgType.CancelGame,room);
+                let tmpMsgObj= {
+                    type:outMsgType.CancelGame,
+                    msg:"Enemy left"
+                }
+                io.to(room).emit(msgTypes.Game,tmpMsgObj);
             }
           });
     }
 }
-
-
 function updateGameListEmit(com,room){
-    let tmpObj=new Object();
-    tmpObj.command=com;
-    tmpObj.room=room;
-    io.to(mmRoom).emit(outMsgType.UpdateGameList,tmpObj);
+    let tmpMsgObj={
+        type:outMsgType.UpdateGameList,
+        command:com,
+        room:room
+    }
+    io.to(mmRoom).emit(msgTypes.Matchmaking,tmpMsgObj);
 }
-
 function removeGame(room){
     for(g of gameCollection){
         if(g.roomid==room){

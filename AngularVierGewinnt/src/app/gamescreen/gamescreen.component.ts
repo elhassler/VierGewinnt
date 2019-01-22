@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {Router, ActivatedRoute} from "@angular/router"
 
 import {SocketHelperService as SHS} from '../socket-helper.service';
-import { InMsgType, MessageObject, OutMsgType } from 'src/environments/environment';
+import { InMsgType, MessageObject, OutMsgType, MsgTypes } from 'src/environments/environment';
+import {WebsocketService as wss} from '../web-socket.service';
+import { subscribeOn } from 'rxjs/operators';
 
 
 @Component({
@@ -10,13 +12,14 @@ import { InMsgType, MessageObject, OutMsgType } from 'src/environments/environme
   templateUrl: './gamescreen.component.html',
   styleUrls: ['./gamescreen.component.css']
 })
-export class GamescreenComponent implements OnInit {
+export class GamescreenComponent implements OnInit, OnDestroy{
   gameRoom;
   gamemessage="";
   player={
     id: 0,
     colour:"unknown"
   }
+  sub;
   gameBoard=[
       [0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0],
@@ -30,42 +33,61 @@ export class GamescreenComponent implements OnInit {
       fullColumn:"Chose another column, this one is full!",
       invalidMove:"This Move was NOT allowed! Try again!"
     }
-  constructor(private webservice: SHS, private router: Router,private route: ActivatedRoute) {
-    
+  constructor(private webservice: wss, private router: Router,private route: ActivatedRoute) {
+    //this.subscribeToSocket();
+    this.sub=this.webservice.onEvent(MsgTypes.Game).subscribe((msg)=>{
+      console.log(msg);
+      switch(msg.type){
+         case InMsgType.Winner:{
+           //ALERT (PLAYER x WON!) POPUP MIT Ok-> zu Matchmaking
+           this.gamemessage="Player "+ msg.playerid +" is the WINNER!";
+           break;
+         }case InMsgType.CancelGame:{
+            //ALERT (ENEMY LEFT!)POPUP MIT Ok-> zu Matchmaking
+            break;
+         }
+         case InMsgType.UpdateGameBoard:{
+           this.gameBoard=msg.gameBoard;
+           break;
+         }
+         case InMsgType.InvalidMove:{
+           this.gamemessage=msg.msg;
+           break;
+         }
+         case InMsgType.InitPlayer:{
+           this.player.id=msg.playerid;
+           if(this.player.id==1){
+             this.player.colour="blue";
+           }else{
+             this.player.colour="red";
+           }
+           break;
+         }case InMsgType.ErrorMessage:{
+           this.gamemessage="Error: "+msg.msg;
+         }
+         default:{
+           this.gamemessage="unknown command:"+msg.type;
+         }
+        }
+    });
+  }
+  ngOnDestroy(){
+    this.sub.unsubscribe();
+    let tmpMsgObj={
+      type:OutMsgType.EndGame,
+      room:this.gameRoom
+    }
+    this.webservice.sendMsg(new MessageObject(MsgTypes.PlayerLeft,tmpMsgObj));
   }
   ngOnInit() {
+    
     this.gameRoom=this.route.snapshot.paramMap.get('gameId');
-    this.webservice.messages.subscribe(msg => {
-      switch(msg.type){
-        case InMsgType.Winner:{
-          this.gamemessage="Player "+ msg.data +" is the WINNER!";
-        }
-        case InMsgType.UpdateGameBoard:{
-          this.gameBoard=msg.data.gameBoard;
-        }
-        case InMsgType.InvalidMove:{
-          this.gamemessage=msg.data;
-          break
-        }
-        case InMsgType.InitPlayer:{
-          this.player.id=msg.data;
-          console.log(this.player.id);
-          if(this.player.id==1){
-            this.player.colour="blue";
-          }else{
-            this.player.colour="red";
-          }
-          break;
-        }
-        default:{
-          console.log(msg.type);
-          console.log(msg.data);
-          //do something to wrong messages
-        }
-     } 
-    });
     //send gameinit to request player number(1/2)
-    this.webservice.sendMsg(new MessageObject(InMsgType.InitPlayer,this.gameRoom));
+    let tmpMsgObj={
+      type:InMsgType.InitPlayer,
+      room:this.gameRoom
+    }
+    this.webservice.sendMsg(new MessageObject(MsgTypes.Game,tmpMsgObj));
   }
   public getColor(player: number): string{
     switch(player) { 
@@ -79,17 +101,60 @@ export class GamescreenComponent implements OnInit {
          return "white";
       }
     }
- }
+  }
+ /*Old Variant (caused multiple subscribtions)
+  private subscribeToSocket(){
+   if(true){
+    this.webservice.messages.subscribe(msg => {
+      if(msg.type==MsgTypes.Game){
+       switch(msg.data.type){
+         case InMsgType.Winner:{
+           //ALERT (PLAYER x WON!) POPUP MIT Ok-> zu Matchmaking
+           this.gamemessage="Player "+ msg.data.playerid +" is the WINNER!";
+           break;
+         }case InMsgType.CancelGame:{
+            //ALERT (ENEMY LEFT!)POPUP MIT Ok-> zu Matchmaking
+            break;
+         }
+         case InMsgType.UpdateGameBoard:{
+           this.gameBoard=msg.data.gameBoard;
+           break;
+         }
+         case InMsgType.InvalidMove:{
+           this.gamemessage=msg.data.msg;
+           break;
+         }
+         case InMsgType.InitPlayer:{
+           this.player.id=msg.data.playerid;
+           if(this.player.id==1){
+             this.player.colour="blue";
+           }else{
+             this.player.colour="red";
+           }
+           break;
+         }case InMsgType.ErrorMessage:{
+           this.gamemessage="Error: "+msg.data.msg;
+         }
+         default:{
+           this.gamemessage="unknown command:"+msg.data.type;
+         }
+      }
+     }else{
+       this.gamemessage="Invalid MsgType:"+msg.type;
+     }
+     });
+   }
+ }*/
  public cellClicked(col){
    this.gamemessage="";
-   console.log(this.gameBoard[1][col]);
    for(let i=this.gameBoard.length-1;i>=0;i--){
     if(this.gameBoard[1][col] ==0){
-      let tmpObj={
+      let tmpMsgObj={
+        type:OutMsgType.PlayMove,
         room:this.gameRoom,
         col:col
       }
-     this.webservice.sendMsg(new MessageObject(OutMsgType.PlayMove,tmpObj));
+     this.webservice.sendMsg(new MessageObject(MsgTypes.Game,tmpMsgObj));
      break;
      }else{
        this.gamemessage=this.gms.fullColumn;
