@@ -21,33 +21,5 @@ export class WebsocketService {
     public sendMsg(msg: MessageObject): void {
         this.socket.emit(msg.type,msg.data);
     }
-  
-   /* connect(): Rx.Subject<MessageEvent> {
-
-      this.socket = io(environment.ws_url);
-  
-
-      let observable = new Observable(observer => {
-          //create Observers for all messageTypes
-          for(let msgType of Object.values(MsgTypes)){
-                this.socket.on(msgType, (data) => {
-                let tmpData=new MessageObject(msgType,data);
-                observer.next(tmpData);
-            })
-            }
-          return () => {
-            this.socket.disconnect();
-          }
-      });
-      
-      let observer = {
-          next: (msg :MessageObject) => {
-              this.socket.emit(msg.type,msg.data);
-          },
-      };
-
-      return Rx.Subject.create(observer, observable);
-    }
-  */
 }
   

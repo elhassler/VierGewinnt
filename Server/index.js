@@ -56,7 +56,7 @@ io.on(msgTypes.Connection, (socket) => {
         socket.emit(InMsgType.Message, message);    
     });*/
     socket.on(msgTypes.PlayerLeft,function(msg){
-        console.log(msg);
+        console.log("PlayerLeft:"+msg.room);
         let index=getGameIndex(msg.room);
         if(index!==null){
           gameRooms.splice(index,1);
