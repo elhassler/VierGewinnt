@@ -45,7 +45,6 @@ export class MessageObject{
 }
 
 export function val(value){
-
   if (value.indexOf("<")==-1) {
     return false;
   }

@@ -56,7 +56,11 @@ app.post("/registration", (req, res) => {
     let surname = req.body.surname;
     let pw1 = req.body.password1;
     let pw2 = req.body.password2;
-   
+    
+    if(!/^[a-zA-Z]+$/.test(surname + "")) {
+        res.status(401).json({ status:401, message: "invalid username" });
+    if(!/^[a-zA-Z]+$/.test(firstname + "")) {
+        res.status(401).json({ status:401, message: "invalid username" });
     if(!/^[a-zA-Z0-9]+$/.test(username + "")) {
         res.status(401).json({ status:401, message: "invalid username" });
     }else if (!/^[a-zA-Z]+$/.test(firstname + "") && !/^[a-zA-Z0-9]+$/.test(surname + "")){
@@ -72,7 +76,7 @@ app.post("/registration", (req, res) => {
                      res.status(200).json({status:200, message: "user inserted"});
                  }
     });
-}  
+}  } }
 });
 
 dbModule.initDb.then(() => {

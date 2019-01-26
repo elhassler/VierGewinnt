@@ -27,7 +27,8 @@ export class LoginComponent implements OnInit {
     let username = target.querySelector("#uname1").value
     let password = target.querySelector("#pw1").value 
     
-    
+   
+
     if(true){//val(username)&&val(password)){
 
     let jsonO={
@@ -38,6 +39,7 @@ export class LoginComponent implements OnInit {
     this.http.post("http://localhost:5001/login",jsonO).subscribe((response)=>{
       console.log('response from post data is ', response);
     //snack(response.error.message);
+    //falscher Username oder Passwort
       let tmp=JSON.parse(JSON.stringify(response))
       let authObj={
         username:username,
@@ -46,17 +48,14 @@ export class LoginComponent implements OnInit {
       this.CookieService.set("auth",JSON.stringify(authObj));
       Globals.loggedIn = true;
       this.router.navigate(['/Matchmaking']);
+
     },(error)=>{
       let tmp=JSON.parse(JSON.stringify(error))
       console.log(tmp.body+'error during post is '+error);
-     
     });
   }
   else {
     //keine sql zeichen
   }
 }
-
-
-
 }
