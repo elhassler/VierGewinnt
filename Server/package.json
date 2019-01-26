@@ -11,6 +11,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.16.4",
+    "express-validator": "^5.3.1",
     "password-hash": "^1.2.2",
     "socket.io": "^2.2.0",
     "websocket": "^1.0.28"

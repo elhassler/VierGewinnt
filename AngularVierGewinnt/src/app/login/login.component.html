@@ -1,12 +1,12 @@
     <main>
       <form id="loginform" (submit)="login($event)">
         <label for name>Benutzername:</label>
-        <input type="text" id="uname1" placeholder="Username..."required><br><br>
+        <input type="text" id="uname1" placeholder="nur Zahlen und Buchstaben" required><br><br>
         <label for password>Passwort:</label>
-        <input type="password" id="pw1" placeholder="Password..." required>
+        <input type="password" id="pw1" placeholder="zwischen 6 bis 20 Zeichen" required>
         <br><br><br>
         <input type="submit" value="Login"/> 
-        <a routerLink="/Registration" routerLinkActive="active">Registration...</a>
+        <a routerLink="/Registration" routerLinkActive="active">Registrieren...</a>
       </form>
     </main>
 

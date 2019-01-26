@@ -68,4 +68,8 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
     this.webservice.sendMsg(tmpData);
   }
  
+  logout(){
+    this.router.navigate(['/Login']);
+  }
+
 }

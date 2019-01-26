@@ -1,3 +1,5 @@
+import { checkAndUpdateBinding } from '@angular/core/src/view/util';
+
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
@@ -40,6 +42,30 @@ export class MessageObject{
     this.type=t;
     this.data=d;
   }
+}
+
+export function val(value){
+
+  if (value.indexOf("<")==-1) {
+    return false;
+  }
+  if (value.indexOf(">")==-1) {
+    return false;
+  }
+  if (value.indexOf(";")==-1) {
+    return false;
+  }
+  if (value.indexOf("'")==-1) {
+    return false;
+  }
+  if (value.indexOf('"')==-1) {
+    return false;
+  }
+  return true;
+}
+
+export var Globals = {
+    loggedIn: false
 }
 
 /*

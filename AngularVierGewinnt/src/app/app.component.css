@@ -9,11 +9,11 @@ header h1 {
 }
 
 footer {
-    bottom: 0;
+    bottom: 8px;
     position: absolute;
     background-color: black;
     color: white;
-    width: 100%;
+    width: 99%;
 }
 
 footer p {
