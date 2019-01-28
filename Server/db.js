@@ -7,7 +7,7 @@ let initDb = new Promise((resolve, reject) => {
     // make sure to import 'db_import/galleryDB.sql' into your MySQL database first
     _db = mysql.createConnection({
         host     : "localhost",
-        user     : "root",
+        user     : "admin",
         password : "Webtech1234@",
         database : "login"
     });
@@ -24,7 +24,7 @@ let initDb = new Promise((resolve, reject) => {
             * Wenn ein Fehler auftritt, wird die Verbindungsanfrage abgelehnt.
             * (Testen durch Ändern des Passwortes)
             */
-           console.log("Error!");
+           console.log("Error:"+err);
             reject();
             return;
         }

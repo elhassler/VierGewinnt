@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import {Router} from "@angular/router"
 import {WebsocketService as wss} from '../web-socket.service';
 import { InMsgType, MessageObject, OutMsgType,MsgTypes } from 'src/environments/environment';
+import { CookieService } from 'ngx-cookie-service';
+import { MyDialogService } from '../my-dialog.service';
 
 @Component({
   selector: 'app-matchmaking',
@@ -11,7 +13,8 @@ import { InMsgType, MessageObject, OutMsgType,MsgTypes } from 'src/environments/
 export class MatchmakingComponent implements OnInit, OnDestroy {
   gameRooms=[];
   sub;
-  constructor(private webservice: wss, private router: Router){
+  auth;
+  constructor(private webservice: wss, private router: Router, private cookieService:CookieService,private dialog:MyDialogService){
    this.sub=this.webservice.onEvent(MsgTypes.Matchmaking).subscribe((msg)=>{
      console.log(msg);
      switch(msg.type){
@@ -30,22 +33,22 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
         break;
       }
       case InMsgType.ErrorMessage:{
-        this.sysmsg="Error: "+msg.msg;
+        this.dialog.openInfoDialog("Error",msg.msg);
       }
       default:{
-        this.sysmsg="Invalid Message:"+msg.type;
+        this.dialog.openInfoDialog("Recieved Invalid Message",msg.type);
       }
     }}
     );
    }
  
-  sysmsg="";
   ngOnDestroy(){
     this.sub.unsubscribe();
   }
   ngOnInit() {
-    
+    this.auth=this.cookieService.get('auth');
     let tmpObj={
+      auth:this.auth,
       type:OutMsgType.InitRooms
     };
     this.webservice.sendMsg(new MessageObject(MsgTypes.Matchmaking,tmpObj));
@@ -53,6 +56,7 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
 
   joinGame(roomId){
     let tmpMsgObj={
+      auth:this.auth,
       type:OutMsgType.JoinGame,
       room:roomId
   }
@@ -62,6 +66,7 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
 
   createGameRoom(){
     let tmpObj={
+      auth:this.auth,
       type:OutMsgType.CreateGame,
     };
     let tmpData=new MessageObject(MsgTypes.Matchmaking,tmpObj);

@@ -81,7 +81,7 @@ app.post("/registration", (req, res) => {
 
 dbModule.initDb.then(() => {
     db=dbModule.getDb();
-    http.listen(5001, () => {
-        console.log("Listening on port " + 5001 + "...");
+    http.listen(5000, () => {
+        console.log("Listening on port " + 5000 + "...");
     });
 }, () => {console.log("Failed to connect to DB!")});

@@ -1,8 +1,18 @@
 var gamelogic =require('./gamelogic');
-
+let passwordHash =require('password-hash'); 
+const dbModule = require("./db");
 let app = require('express')();
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
+let bodyParser = require('body-parser');
+const cors = require('cors');
+
+
+app.use(bodyParser.urlencoded({ extended: true })); 
+app.use(bodyParser.json()); 
+app.use(cors());
+
+let db;
 
 var gameCollection=[];
 
@@ -12,7 +22,8 @@ const msgTypes={
     Disconnect:"disconnect",
     Game:"game",
     Matchmaking:"matchmaking",
-    PlayerLeft:"playerleft"
+    PlayerLeft:"playerleft",
+    Auth:"auth"
 }
 const outMsgType={
     ErrorMessage :"error",
@@ -36,18 +47,89 @@ const inMsgType={
 const mmRoom="mmRoom";
 let gameRooms=[];
 
-http.listen(5000, () => {
-    console.log('started on port 5000');
+dbModule.initDb.then(() => {
+    db=dbModule.getDb();
+    http.listen(5000, () => {
+        console.log("Listening on port " + 5000 + "...");
+    });
+}, () => {console.log("Failed to connect to DB!")});
+
+//LOGIN
+
+app.post("/login", (req, res) => {
+    console.log(req.body.username);
+
+    let username = req.body.username;
+    let pw = req.body.password;
+    
+    if(!/^[a-zA-Z0-9]+$/.test(username + "")) {
+        res.status(401).json({ status:401, message: "invalid username" });
+    }else {
+        console.log("username check");
+
+    db.query("SELECT passwort FROM logindaten where username='" + username + "';", function (err, result, fields) {
+        
+        if (err) {
+            res.status(400).json({ status:400, message: "an error occured" });
+        }else if( result === undefined  ) {
+            res.status(401).json({ status:401, message: "login failed" });
+        }else if( result.length == 0  ) {
+            res.status(401).json({ status:401, message: "login failed" });
+       } else if(passwordHash.verify(pw,result[0].passwort)){
+            let token = Math.floor(Math.random() * 999999); 
+            db.query("INSERT INTO token (username, token) VALUES('" + username + "','" + token + "') ON DUPLICATE KEY UPDATE token ='" + token + "' ", function (err, result) {
+                if (err) { res.status(400).json({ status:400, message: "an error occured" });
+                 }
+            });
+            res.status(200).json({ status:200, message: "login successful", "Data":{username: username, token:token}});
+        } else {
+            console.log(err);
+            res.status(401).json({ status:401, message: "login failed" });
+        }
+
+    });
+}   
 });
+
+
+app.post("/registration", (req, res) => {   
+    console.log(req.body);
+    let username = req.body.username;
+    let firstname = req.body.firstname;
+    let surname = req.body.surname;
+    let pw1 = req.body.password1;
+  
+    if(!username.match("^[A-z0-9]+$")) {
+        res.status(401).json({ status:401, message: "invalid username" });
+    }else if (!firstname.match("^[A-z]+$") ||!surname.match("^[A-z]+$")){
+        res.status(401).json({ status:401, message: "invalid name" });
+    }else {
+    console.log("Valid Inputs!"); 
+    let pw=passwordHash.generate(pw1);
+    console.log(pw);
+    let tmp="INSERT INTO `logindaten`(`username`, `vorname`, `nachname`, `passwort`) VALUES ('"+username+"','"+firstname+"','"+surname+"','"+pw+"')";
+    console.log(tmp);
+    db.query(tmp, function (err, result, fields) {
+        if (err) { res.status(400).json({ status:400, message: err.message });
+                 } else {
+                     res.status(200).json({status:200, message: "user inserted"});
+                 }
+    });
+}  //} }
+}
+);
+
+
+//SOCKET
 
 io.on(msgTypes.Connection, (socket) => {
     console.log("User connected");
     socket.join(mmRoom);
-
+    socket.username="";
     socket.on(msgTypes.Disconnect, function(){
-        console.log('user disconnected');
+        console.log('user disconnected'+socket.username);
        Object.keys(io.sockets.adapter.rooms).forEach(function(room){
-            io.to(room).emit(outMsgType.CancelGame,'a Player left');
+            if(room!=mmRoom)io.to(room).emit(outMsgType.CancelGame,'a Player left');
         });
     });
     /*
@@ -55,6 +137,7 @@ io.on(msgTypes.Connection, (socket) => {
         console.log("Message Received: " + message);
         socket.emit(InMsgType.Message, message);    
     });*/
+
     socket.on(msgTypes.PlayerLeft,function(msg){
         console.log("PlayerLeft:"+msg.room);
         let index=getGameIndex(msg.room);
@@ -66,41 +149,76 @@ io.on(msgTypes.Connection, (socket) => {
         socket.join(mmRoom);
     });
     socket.on(msgTypes.Matchmaking, function(msg){
-        console.log(msg);
-        if(msg.type===inMsgType.InitRooms){
-            initRooms(socket);
-        }else if(msg.type===inMsgType.CreateGame){
-            createGame(socket);
-        }else if(msg.type===inMsgType.JoinGame){
-            joinGame(socket,msg.room);
-        }else{
-            console.log("Matchmaking:Unknown Command Type");
+        checkAuth(socket,msg.auth).then(function resolve(){
+            console.log(msg);
+            if(msg.type===inMsgType.InitRooms){
+                initRooms(socket);
+            }else if(msg.type===inMsgType.CreateGame){
+                createGame(socket);
+            }else if(msg.type===inMsgType.JoinGame){
+                joinGame(socket,msg.room);
+            }else{
+                console.log("Matchmaking:Unknown Command Type");
+                    let tmpMsgObj={
+                        type:outMsgType.ErrorMessage,
+                        msg:"unknown matchmaking command: "+msg.type
+                    }
+                    socket.emit(msgTypes.Matchmaking,tmpMsgObj);
+            }
+        },function reject(result){
+            console.log(result);
+            socket.disconnect();
+        });
+    });
+    socket.on(msgTypes.Game, function(msg){    
+        checkAuth(socket,msg.auth).then(function resolve(){
+            console.log(msg);
+            if(msg.type===inMsgType.InitPlayer){
+                initPlayer(socket,msg.room);
+            }else if(msg.type===inMsgType.EndGame){
+                endGame(socket);
+            }else if(msg.type===inMsgType.PlayMove){
+                playMove(socket,msg);
+            }else{
+                console.log("Game:Unknown Command Type");
                 let tmpMsgObj={
                     type:outMsgType.ErrorMessage,
-                    msg:"unknown matchmaking command: "+msg.type
+                    msg:"unknown game command: "+msg.type
                 }
-                socket.emit(msgTypes.Matchmaking,tmpMsgObj);
-        }
-      
-    });
-    socket.on(msgTypes.Game, function(msg){
-        console.log(msg);
-        if(msg.type===inMsgType.InitPlayer){
-            initPlayer(socket,msg.room);
-        }else if(msg.type===inMsgType.EndGame){
-            endGame(socket);
-        }else if(msg.type===inMsgType.PlayMove){
-            playMove(socket,msg);
-        }else{
-            console.log("Game:Unknown Command Type");
-            let tmpMsgObj={
-                type:outMsgType.ErrorMessage,
-                msg:"unknown game command: "+msg.type
+                socket.emit(msgTypes.Game,tmpMsgObj);
             }
-            socket.emit(msgTypes.Game,tmpMsgObj);
-        }
+        },function reject(result){
+            console.log(result);
+            socket.disconnect();
+        });
     }); 
 });
+
+
+//Auth-Function
+function checkAuth(socket,authJSON){
+    return new Promise(function(resolve,reject){
+        let auth=JSON.parse(authJSON);
+        if(!/^[a-zA-Z0-9]+$/.test(auth.username + "")) {
+            reject("Invalid Input");
+        }else {
+            let tmp="SELECT token FROM token where username='" + auth.username + "';";
+            console.log(tmp);
+            db.query(tmp, function (err, result) {
+                if (err || result === undefined) {
+                    reject("Not Found in DB");
+                }else if( result.length == 0  ) {
+                    reject("No result");
+            } else if(result[0].token===auth.token){
+                    socket.username=auth.username;
+                    resolve();
+            }else{
+                reject("Unknown Error");
+            }
+            });  
+        }
+    });
+}
 
 //Matchmaking Message Functions
 function initRooms(socket){
@@ -115,7 +233,7 @@ function initRooms(socket){
 
 function createGame(socket){
     leaveRooms(socket);
-    let newRoom=createUniqueRoom();
+    let newRoom=socket.username;
     gameRooms.push(newRoom);
     socket.join(newRoom);
     console.log("createGameRoom: "+newRoom);
@@ -207,10 +325,10 @@ function playMove(socket,msg){
                     console.log("Game Won by:"+socket.username+" in room:"+msg.room);
                     let tmpMsgObj={
                         type:outMsgType.Winner,
-                        msg:socket.playerid
+                        playerid:socket.playerid
                     }
                     io.to(msg.room).emit(msgTypes.Game,tmpMsgObj);
-                    leaveRooms(socket);
+                    socket.leave(msg.room);
                     removeGame(msg.room);
                     socket.join(mmRoom);
                 }
@@ -234,14 +352,14 @@ function playMove(socket,msg){
 
 }
 
-//Helper Functions and Class
-function createUniqueRoom(){
+//GameHelper Functions and Class
+/*function createUniqueRoom(){
     let tmp=''+Math.floor(Math.random()*900+101);
     if(gameRooms.includes(tmp)){
         tmp=createUniqueRoom();
     }
     return tmp;
-}
+}*/
 function leaveRooms(socket){
     tmp=Object.values(socket.rooms);
     if(tmp.length> 1){
@@ -262,6 +380,7 @@ function leaveRooms(socket){
     }
 }
 function updateGameListEmit(com,room){
+    console.log("updategamelist: "+com+" "+room);
     let tmpMsgObj={
         type:outMsgType.UpdateGameList,
         command:com,

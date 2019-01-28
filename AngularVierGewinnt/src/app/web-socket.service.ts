@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as io from 'socket.io-client';
 import { Observable} from 'rxjs';
-import * as Rx from 'rxjs';
 import { environment, MsgTypes, MessageObject } from '../environments/environment';
 
 

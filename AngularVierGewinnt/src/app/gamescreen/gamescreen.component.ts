@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import {Router, ActivatedRoute} from "@angular/router"
 import { InMsgType, MessageObject, OutMsgType, MsgTypes } from 'src/environments/environment';
 import {WebsocketService as wss} from '../web-socket.service';
+import { CookieService } from 'ngx-cookie-service';
+import { MyDialogService } from '../my-dialog.service';
 
 @Component({
   selector: 'app-gamescreen',
@@ -15,6 +17,7 @@ export class GamescreenComponent implements OnInit, OnDestroy{
     id: 0,
     colour:"unknown"
   }
+  auth;
   sub;
   gameBoard=[
       [0,0,0,0,0,0,0,0],
@@ -29,16 +32,24 @@ export class GamescreenComponent implements OnInit, OnDestroy{
       fullColumn:"Chose another column, this one is full!",
       invalidMove:"This Move was NOT allowed! Try again!"
     }
-  constructor(private webservice: wss, private router: Router,private route: ActivatedRoute) {
+  constructor(private webservice: wss, private router: Router,private route: ActivatedRoute,private cookieService: CookieService,private dialog:MyDialogService ) {
+   
     this.sub=this.webservice.onEvent(MsgTypes.Game).subscribe((msg)=>{
       console.log(msg);
       switch(msg.type){
          case InMsgType.Winner:{
            //ALERT (PLAYER x WON!) POPUP MIT Ok-> zu Matchmaking
            this.gamemessage="Player "+ msg.playerid +" is the WINNER!";
+           console.log(this.player.id);
+           if(msg.playerid===this.player.id){
+             this.dialog.gameEndDialog("Congratulation!","You won the game!");
+           }else{
+            this.dialog.gameEndDialog("Sorry!","You lost the game!");
+           }
+           
            break;
          }case InMsgType.CancelGame:{
-            //ALERT (ENEMY LEFT!)POPUP MIT Ok-> zu Matchmaking
+          this.dialog.gameEndDialog("Game Over!","Your Enemy decided to quit!");
             break;
          }
          case InMsgType.UpdateGameBoard:{
@@ -67,18 +78,20 @@ export class GamescreenComponent implements OnInit, OnDestroy{
     });
   }
   ngOnDestroy(){
-    this.sub.unsubscribe();
     let tmpMsgObj={
+      auth:this.auth,
       type:OutMsgType.EndGame,
       room:this.gameRoom
     }
     this.webservice.sendMsg(new MessageObject(MsgTypes.PlayerLeft,tmpMsgObj));
+    this.sub.unsubscribe();
   }
   ngOnInit() {
-    
+    this.auth=this.cookieService.get('auth');
     this.gameRoom=this.route.snapshot.paramMap.get('gameId');
     //send gameinit to request player number(1/2)
     let tmpMsgObj={
+      auth:this.auth,
       type:InMsgType.InitPlayer,
       room:this.gameRoom
     }
@@ -103,6 +116,7 @@ export class GamescreenComponent implements OnInit, OnDestroy{
    for(let i=this.gameBoard.length-1;i>=0;i--){
     if(this.gameBoard[1][col] ==0){
       let tmpMsgObj={
+        auth:this.auth,
         type:OutMsgType.PlayMove,
         room:this.gameRoom,
         col:col

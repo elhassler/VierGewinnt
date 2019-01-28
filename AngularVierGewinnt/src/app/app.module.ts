@@ -11,6 +11,9 @@ import { RegistrationComponent } from './registration/registration.component';
 import { WebsocketService } from './web-socket.service';
 import { HttpClientModule } from '@angular/common/http';
 import {CookieService} from 'ngx-cookie-service';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatDialogModule} from '@angular/material/';
+import { MyDialogComponent } from './my-dialog/my-dialog.component';
 
 const appRoutes: Routes = [
   { path: 'Login', component: LoginComponent},
@@ -26,18 +29,24 @@ const appRoutes: Routes = [
     LoginComponent,
     GamescreenComponent,
     MatchmakingComponent,
-    RegistrationComponent
+    RegistrationComponent,
+    MyDialogComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    MatDialogModule,
+    BrowserAnimationsModule,
     RouterModule.forRoot(
       appRoutes,
       { enableTracing: true } // <-- debugging purposes only
     )
   ],
   providers: [WebsocketService, CookieService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    MyDialogComponent
+  ]
 })
 export class AppModule { }

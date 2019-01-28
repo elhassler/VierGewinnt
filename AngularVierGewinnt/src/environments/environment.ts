@@ -12,7 +12,8 @@ export enum MsgTypes{
   Message="message",
   Game="game",
   Matchmaking="matchmaking",
-  PlayerLeft="playerleft"
+  PlayerLeft="playerleft",
+  Auth="auth"
 }
 export enum InMsgType{
   ErrorMessage ="error",
@@ -44,22 +45,13 @@ export class MessageObject{
   }
 }
 
-export function val(value){
-  if (value.indexOf("<")==-1) {
-    return false;
-  }
-  if (value.indexOf(">")==-1) {
-    return false;
-  }
-  if (value.indexOf(";")==-1) {
-    return false;
-  }
-  if (value.indexOf("'")==-1) {
-    return false;
-  }
-  if (value.indexOf('"')==-1) {
-    return false;
-  }
+export function val(value):boolean{
+  let restrictedSigns=["<",">",";","'",'"',"\\",
+  ]
+ for(let i=0;i<restrictedSigns.length;i++){
+   console.log(value.indexOf(restrictedSigns[i])+", "+restrictedSigns[i]);
+   if(value.indexOf(restrictedSigns[i])!==-1){return false;}
+ }
   return true;
 }
 
