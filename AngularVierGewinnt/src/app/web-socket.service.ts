@@ -7,11 +7,12 @@ import { environment, MsgTypes, MessageObject } from '../environments/environmen
 @Injectable()
 export class WebsocketService {
 
-    private socket;
+   private socket;
 
     constructor() {
         this.socket=io(environment.ws_url);
      }
+
      public onEvent(event: MsgTypes): Observable<any> {
         return new Observable<MsgTypes>(observer => {
             this.socket.on(event, (msg) => observer.next(msg));

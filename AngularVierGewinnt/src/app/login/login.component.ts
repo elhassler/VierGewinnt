@@ -4,8 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import {Router} from "@angular/router";
 import { val } from 'src/environments/environment';
-import { Globals } from 'src/environments/environment';
 import {MyDialogService} from '../my-dialog.service';
+import { AppComponent} from '../app.component';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +14,7 @@ import {MyDialogService} from '../my-dialog.service';
 })
 export class LoginComponent implements OnInit {
   
-  constructor(private http: HttpClient, private CookieService: CookieService, private router: Router, private dialog:MyDialogService) { }
+  constructor(private http: HttpClient, private CookieService: CookieService, private router: Router, private dialog:MyDialogService,private appComp:AppComponent) { }
 
 
   ngOnInit() {
@@ -47,7 +47,8 @@ export class LoginComponent implements OnInit {
         token:tmp.Data.token
       }
       this.CookieService.set("auth",JSON.stringify(authObj));
-      Globals.loggedIn = true;
+      this.appComp.loggedIn=true;
+      this.appComp.username=username;
       this.router.navigate(['/Matchmaking']);
 
     },(error)=>{

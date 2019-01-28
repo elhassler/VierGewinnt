@@ -87,7 +87,7 @@ export class GamescreenComponent implements OnInit, OnDestroy{
     this.sub.unsubscribe();
   }
   ngOnInit() {
-    this.auth=this.cookieService.get('auth');
+    this.auth=JSON.parse(this.cookieService.get('auth'));
     this.gameRoom=this.route.snapshot.paramMap.get('gameId');
     //send gameinit to request player number(1/2)
     let tmpMsgObj={

@@ -12,6 +12,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json()); 
 app.use(cors());
 
+let connections=[];
 let db;
 
 var gameCollection=[];
@@ -57,16 +58,15 @@ dbModule.initDb.then(() => {
 //LOGIN
 
 app.post("/login", (req, res) => {
-    console.log(req.body.username);
+    console.log("Login:"+req.body.username);
 
     let username = req.body.username;
     let pw = req.body.password;
     
-    if(!/^[a-zA-Z0-9]+$/.test(username + "")) {
+    if(!/^[A-z0-9]+$/.test(username)) {
         res.status(401).json({ status:401, message: "invalid username" });
     }else {
-        console.log("username check");
-
+    console.log("Valid Inputs");
     db.query("SELECT passwort FROM logindaten where username='" + username + "';", function (err, result, fields) {
         
         if (err) {
@@ -99,16 +99,15 @@ app.post("/registration", (req, res) => {
     let surname = req.body.surname;
     let pw1 = req.body.password1;
   
-    if(!username.match("^[A-z0-9]+$")) {
+    if(!/^[A-z0-9]+$/.test(username)) {
         res.status(401).json({ status:401, message: "invalid username" });
-    }else if (!firstname.match("^[A-z]+$") ||!surname.match("^[A-z]+$")){
+    }else if (!/^[A-z0-9]+$/.test(firstname) ||!/^[A-z0-9]+$/.test(surname)){
         res.status(401).json({ status:401, message: "invalid name" });
     }else {
     console.log("Valid Inputs!"); 
     let pw=passwordHash.generate(pw1);
     console.log(pw);
     let tmp="INSERT INTO `logindaten`(`username`, `vorname`, `nachname`, `passwort`) VALUES ('"+username+"','"+firstname+"','"+surname+"','"+pw+"')";
-    console.log(tmp);
     db.query(tmp, function (err, result, fields) {
         if (err) { res.status(400).json({ status:400, message: err.message });
                  } else {
@@ -119,18 +118,52 @@ app.post("/registration", (req, res) => {
 }
 );
 
+app.post("/logout",(req, res) => {
+    console.log("Logout:"+req.body.username);
+    if(/^[A-z0-9]+$/.test(req.body.username)) {
+        let tmp="DELETE FROM `token` WHERE `username`='"+req.body.username+"';";
+        console.log(tmp);
+        db.query(tmp, function (err) {
+            if (err) { res.status(400).json({ status:400, message: err.message });
+                    } else {
+                        res.status(200).json({status:200, message: "user logged out"});
+                        connections.forEach(element => {
+                            if(element.username.localeCompare(req.body.username)==0){
+                                console.log("Socket removed");
+                                element.username="";
+                                leaveRooms(element);
+                                element.join(mmRoom);
+                                return false;
+                            }
+                        });
+                        if(gameRooms.includes(req.body.username)){
+                            gameRooms.splice( gameRooms.indexOf(req.body.username), 1 );
+                        }
+
+                    }
+        });
+    }else{
+        res.status(406).json({ status:406, message: "Invalid Username" });
+    }
+});
 
 //SOCKET
 
 io.on(msgTypes.Connection, (socket) => {
+    connections.push(socket);
     console.log("User connected");
     socket.join(mmRoom);
     socket.username="";
     socket.on(msgTypes.Disconnect, function(){
-        console.log('user disconnected'+socket.username);
+        connections.splice(connections.indexOf(socket),1);
+        console.log('user disconnected '+socket.username);
        Object.keys(io.sockets.adapter.rooms).forEach(function(room){
             if(room!=mmRoom)io.to(room).emit(outMsgType.CancelGame,'a Player left');
         });
+    });
+    socket.on(msgTypes.Auth, function(msg){
+        console.log("Init Socket:"+msg.username);
+        socket.username=msg.username;
     });
     /*
     socket.on(msgTypes.Message, function(message) {
@@ -196,10 +229,9 @@ io.on(msgTypes.Connection, (socket) => {
 
 
 //Auth-Function
-function checkAuth(socket,authJSON){
-    return new Promise(function(resolve,reject){
-        let auth=JSON.parse(authJSON);
-        if(!/^[a-zA-Z0-9]+$/.test(auth.username + "")) {
+function checkAuth(socket,auth){
+    return new Promise(function(resolve,reject){  
+        if(!auth.username.match("^[A-z0-9]+$")) {
             reject("Invalid Input");
         }else {
             let tmp="SELECT token FROM token where username='" + auth.username + "';";
@@ -209,8 +241,7 @@ function checkAuth(socket,authJSON){
                     reject("Not Found in DB");
                 }else if( result.length == 0  ) {
                     reject("No result");
-            } else if(result[0].token===auth.token){
-                    socket.username=auth.username;
+            } else if(result[0].token===auth.token&& socket.username.localeCompare(auth.username)==0){
                     resolve();
             }else{
                 reject("Unknown Error");

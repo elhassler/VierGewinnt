@@ -1,6 +1,6 @@
 <body>
     <header>
-        <h1>VierGewinnt</h1>
+        <h1>VierGewinnt <span *ngIf='loggedIn'><button (click)="logout()">Logout {{username}}</button></span></h1>
     </header>
     <main>
        <router-outlet></router-outlet>

@@ -4,7 +4,6 @@ import {WebsocketService as wss} from '../web-socket.service';
 import { InMsgType, MessageObject, OutMsgType,MsgTypes } from 'src/environments/environment';
 import { CookieService } from 'ngx-cookie-service';
 import { MyDialogService } from '../my-dialog.service';
-
 @Component({
   selector: 'app-matchmaking',
   templateUrl: './matchmaking.component.html',
@@ -46,7 +45,8 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
     this.sub.unsubscribe();
   }
   ngOnInit() {
-    this.auth=this.cookieService.get('auth');
+    this.auth=JSON.parse(this.cookieService.get('auth'));
+    this.webservice.sendMsg(new MessageObject(MsgTypes.Auth,this.auth));
     let tmpObj={
       auth:this.auth,
       type:OutMsgType.InitRooms
@@ -73,8 +73,5 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
     this.webservice.sendMsg(tmpData);
   }
  
-  logout(){
-    this.router.navigate(['/Login']);
-  }
 
 }
