@@ -1,5 +1,4 @@
     <main>
-      <div ng-app="">
           <form  id="registrationform" (submit)=registration($event)>
             <label for name>Benutzername:</label>
             <input type="text" id="uname2" placeholder="nur Zahlen und Buchstaben" minlength="4" required><br><br>
@@ -8,13 +7,11 @@
             <label for name>Nachname:</label>
             <input type="text" id="sname" placeholder="nur Buchstaben" maxlength="50" required ><br><br>
             <label for password>Passwort:</label>
-            <input type="password" id="pw2" name="pw2"  placeholder="zwischen 6 bis 20 Zeichen" minlength="6" maxlength="20" required><br><br>
+            <input type="password" id="pw2" placeholder="zwischen 6 bis 20 Zeichen" minlength="6" maxlength="20" required><br><br>
             <label for name>Passwort wiederholen:</label>
-            <input type="password" id="pw3"  placeholder="zwischen 6 bis 20 Zeichen" validateEqual="pw2" minlength="6" maxlength="20" required><br><br>
+            <input type="password" id="pw3"  placeholder="zwischen 6 bis 20 Zeichen" minlength="6" maxlength="20" required><br><br>
             <br><br>
-            <input type="submit" value="Registration"/> 
+            <input type="submit" id="submit" value="Registrieren"/> 
             <a routerLink="/Login" routerLinkActive="active">Ich habe bereits ein Konto...</a>
           </form>
-          
-      </div>
     </main>

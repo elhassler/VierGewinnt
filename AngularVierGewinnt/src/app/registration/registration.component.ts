@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-
-import {Router} from "@angular/router";
+import { Router } from "@angular/router";
 import { HttpClient } from '@angular/common/http';
 import { val } from 'src/environments/environment';
 import { MyDialogService } from '../my-dialog.service';
@@ -14,8 +13,7 @@ import { MyDialogService } from '../my-dialog.service';
 })
 export class RegistrationComponent implements OnInit {
 
-  constructor(private http: HttpClient, private router: Router,private dialog:MyDialogService) { }
-  
+  constructor(private http: HttpClient, private router: Router, private dialog:MyDialogService) { }
 
   ngOnInit() {
   }
@@ -61,13 +59,13 @@ export class RegistrationComponent implements OnInit {
     },(error)=>{
       console.log('error during post is '+error.error.message);
       if(error.error.message.startsWith("ER_DUP_ENTRY")){
-        //snack
         this.dialog.openInfoDialog("Error","Username already taken!");
         console.log("Nutzer bereits vorhanden");
       }else{
         this.dialog.openInfoDialog("Error",error.error.message);
       }
     });
+
   }
 }
 }

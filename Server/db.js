@@ -7,17 +7,11 @@ let initDb = new Promise((resolve, reject) => {
     // make sure to import 'db_import/galleryDB.sql' into your MySQL database first
     _db = mysql.createConnection({
         host     : "localhost",
-        user     : "admin",
+        user     : "root",
         password : "Webtech1234@",
         database : "login"
     });
 
-    /*
-    * EX01:
-    * 
-    * Um die DB-Verbindung aufzustellen muss <mysql import name>.connect(...) aufgerufen werden.
-    * die connect-Methode bekommt eine Methode übergeben, die im Fehlerfall die verbindung rejected (reject) und ansonsten eine Verbindung aufbaut (resolve)
-    */
     _db.connect(function(err) {
         if (err) {
             /*
@@ -31,12 +25,7 @@ let initDb = new Promise((resolve, reject) => {
         console.log("Database is connected...");
         /*
         * Wenn kein fehler auftritt, resolven wir die Verbindungsanfrage.
-        
-        
-        _db.query("SELECT * FROM logindaten", function(err, result){
-            if(err) throw err;
-            console.log(result);
-        })*/
+        */
         resolve();
       });
 });

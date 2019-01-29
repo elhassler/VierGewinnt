@@ -1,8 +1,8 @@
-<div class="header">
-<h1>Welcome to VierGewinnt! GameId: {{gameRoom}}</h1>
-<h2>You are Player {{player.id}}, your colour is {{player.colour}}</h2>
-</div>
-<table id="gameboard">
+<main>
+  <div class="header">
+    <h2>You are Player {{player.id}}, your colour is {{player.colour}}</h2>
+  </div>
+  <table id="gameboard">
   <tr *ngFor="let currentRow of gameBoard">
     <ng-container *ngFor="let currentCell of currentRow; index as col">
         <td [ngStyle]="{'background-color': getColor(currentCell)}" (click)="cellClicked(col)"></td>
@@ -10,3 +10,4 @@
   </tr>
 </table>
 <h3>{{gamemessage}}</h3>
+</main>

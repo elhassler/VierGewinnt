@@ -1,8 +1,10 @@
-<h1>Matchmaking</h1>
-<ul>
-  <li *ngFor="let x of gameRooms" (click)="joinGame(x)">{{x}}</li>
-</ul>
-<ul>
-  <li *ngFor="let x of messages">{{x}}</li>
-</ul>
-<button (click)="createGameRoom()">New Game</button>
+<main>
+  <h1>Matchmaking</h1>
+  <ol>
+    <li *ngFor="let x of gameRooms" (click)="joinGame(x)">{{x}}</li>
+  </ol>
+  <ol>
+    <li *ngFor="let x of messages">{{x}}</li>
+  </ol>
+  <button (click)="createGameRoom()">New Game</button>
+</main>

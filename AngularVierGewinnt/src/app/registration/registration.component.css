@@ -1,5 +1,6 @@
+
 main #registrationform{
-    padding-top: 100px;
+    padding-top: 200px;
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -12,4 +13,15 @@ main #registrationform label, a{
 
 main #registrationform input, button {
      float: right;
+ }
+
+ #submit {
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: grey
  }
