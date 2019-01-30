@@ -12,7 +12,6 @@ import { MyDialogService } from '../my-dialog.service';
 })
 export class GamescreenComponent implements OnInit, OnDestroy{
   gameRoom;
-  gamemessage="";
   player={
     id: 0,
     colour:"unknown"
@@ -28,10 +27,6 @@ export class GamescreenComponent implements OnInit, OnDestroy{
       [0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0]
     ];
-    gms={
-      fullColumn:"Chose another column, this one is full!",
-      invalidMove:"This Move was NOT allowed! Try again!"
-    }
   constructor(private webservice: wss, private router: Router,private route: ActivatedRoute,private cookieService: CookieService,private dialog:MyDialogService ) {
    
     this.sub=this.webservice.onEvent(MsgTypes.Game).subscribe((msg)=>{
@@ -39,7 +34,6 @@ export class GamescreenComponent implements OnInit, OnDestroy{
       switch(msg.type){
          case InMsgType.Winner:{
            //ALERT (PLAYER x WON!) POPUP MIT Ok-> zu Matchmaking
-           this.gamemessage="Player "+ msg.playerid +" is the WINNER!";
            console.log(this.player.id);
            if(msg.playerid===this.player.id){
              this.dialog.gameEndDialog("Congratulation!","You won the game!");
@@ -57,7 +51,7 @@ export class GamescreenComponent implements OnInit, OnDestroy{
            break;
          }
          case InMsgType.InvalidMove:{
-           this.gamemessage=msg.msg;
+          this.dialog.openInfoDialog("Invalid Move!",msg.msg);
            break;
          }
          case InMsgType.InitPlayer:{
@@ -69,10 +63,10 @@ export class GamescreenComponent implements OnInit, OnDestroy{
            }
            break;
          }case InMsgType.ErrorMessage:{
-           this.gamemessage="Error: "+msg.msg;
+          this.dialog.openInfoDialog("Error:",msg.msg);
          }
          default:{
-           this.gamemessage="unknown command:"+msg.type;
+          this.dialog.openInfoDialog("Unknown command:",msg.msg);
          }
         }
     });
@@ -112,9 +106,7 @@ export class GamescreenComponent implements OnInit, OnDestroy{
   }
  
  public cellClicked(col){
-   this.gamemessage="";
-   for(let i=this.gameBoard.length-1;i>=0;i--){
-    if(this.gameBoard[1][col] ==0){
+    if(this.gameBoard[0][col] ==0){
       let tmpMsgObj={
         auth:this.auth,
         type:OutMsgType.PlayMove,
@@ -122,11 +114,10 @@ export class GamescreenComponent implements OnInit, OnDestroy{
         col:col
       }
      this.webservice.sendMsg(new MessageObject(MsgTypes.Game,tmpMsgObj));
-     break;
      }else{
-       this.gamemessage=this.gms.fullColumn;
+      this.dialog.openInfoDialog("Invalid Move!","Column is full!");
      }
-   }
+   
  }
 
 }

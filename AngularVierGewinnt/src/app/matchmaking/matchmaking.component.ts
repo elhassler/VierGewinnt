@@ -14,37 +14,14 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
   sub;
   auth;
   constructor(private webservice: wss, private router: Router, private cookieService:CookieService,private dialog:MyDialogService){
-   this.sub=this.webservice.onEvent(MsgTypes.Matchmaking).subscribe((msg)=>{
-     console.log(msg);
-     switch(msg.type){
-      case InMsgType.UpdateGameList:{
-        if(msg.command=="add"){
-            this.gameRooms.push(msg.room);
-        }else if(msg.command=="remove"){
-            this.gameRooms.splice( this.gameRooms.indexOf(msg.room), 1 );
-        }else if(msg.command=="init"){
-            this.gameRooms=msg.room;
-        }
-        break;
-      }
-      case InMsgType.GameRoom:{
-        this.router.navigate(['/Gamescreen',msg.room]);
-        break;
-      }
-      case InMsgType.ErrorMessage:{
-        this.dialog.openInfoDialog("Error",msg.msg);
-      }
-      default:{
-        this.dialog.openInfoDialog("Recieved Invalid Message",msg.type);
-      }
-    }}
-    );
+    
    }
- 
+  
   ngOnDestroy(){
     this.sub.unsubscribe();
   }
   ngOnInit() {
+    this.subToSocket();
     this.auth=JSON.parse(this.cookieService.get('auth'));
     this.webservice.sendMsg(new MessageObject(MsgTypes.Auth,this.auth));
     let tmpObj={
@@ -52,6 +29,34 @@ export class MatchmakingComponent implements OnInit, OnDestroy {
       type:OutMsgType.InitRooms
     };
     this.webservice.sendMsg(new MessageObject(MsgTypes.Matchmaking,tmpObj));
+  }
+
+  subToSocket(){
+    this.sub=this.webservice.onEvent(MsgTypes.Matchmaking).subscribe((msg)=>{
+      console.log(msg);
+      switch(msg.type){
+       case InMsgType.UpdateGameList:{
+         if(msg.command=="add"){
+             this.gameRooms.push(msg.room);
+         }else if(msg.command=="remove"){
+             this.gameRooms.splice( this.gameRooms.indexOf(msg.room), 1 );
+         }else if(msg.command=="init"){
+             this.gameRooms=msg.room;
+         }
+         break;
+       }
+       case InMsgType.GameRoom:{
+         this.router.navigate(['/Gamescreen',msg.room]);
+         break;
+       }
+       case InMsgType.ErrorMessage:{
+         this.dialog.openInfoDialog("Error",msg.msg);
+       }
+       default:{
+         this.dialog.openInfoDialog("Recieved Invalid Message",msg.type);
+       }
+     }}
+     );
   }
 
   joinGame(roomId){

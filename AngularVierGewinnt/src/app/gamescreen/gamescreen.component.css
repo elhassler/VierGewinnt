@@ -1,17 +1,23 @@
 #gameboard{
     border: 2px solid black;
-    table-layout: fixed;
-    width: 800px;
+    width: 98vw-16px;
+    height: 98vh-50px;
     padding:0px;
     margin:0px;
+    margin-bottom: 50px;
 }
-
+body {
+    margin:0px;
+}
 #gameboard td{
     border: 1px solid black;
-    width: 100px;
-    height: 100px;
+    width: 12vw;
+    height:7vh;
 }
 
 main {
-    margin-top: 150px;
+    margin-top:110px;
+    margin-left:0px;
+    margin-right: 0px;
+    padding:0px;
 }

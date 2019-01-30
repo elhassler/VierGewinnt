@@ -7,7 +7,7 @@ let initDb = new Promise((resolve, reject) => {
     // make sure to import 'db_import/galleryDB.sql' into your MySQL database first
     _db = mysql.createConnection({
         host     : "localhost",
-        user     : "root",
+        user     : "admin",
         password : "Webtech1234@",
         database : "login"
     });

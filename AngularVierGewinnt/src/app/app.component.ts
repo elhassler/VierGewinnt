@@ -13,7 +13,15 @@ export class AppComponent {
   title = 'AngularVierGewinnt';
   loggedIn =false;
   username="";
-  constructor( private router: Router,private cookieService:CookieService,private http: HttpClient, private dialog:MyDialogService){}
+  constructor( private router: Router,private cookieService:CookieService,private http: HttpClient, private dialog:MyDialogService){
+    let authJSON=this.cookieService.get('auth');
+    if(authJSON){
+      console.log("User signed in!");
+      let auth=JSON.parse(authJSON);
+      this.username=auth.username;
+      this.loggedIn=true;
+    }
+  }
   logout(){
    
     this.loggedIn=false;

@@ -253,6 +253,7 @@ function checkAuth(socket,auth){
 
 //Matchmaking Message Functions
 function initRooms(socket){
+    socket.join(mmRoom);
     console.log("Init Rooms");
     let tmpMsgObj= {
         type:outMsgType.UpdateGameList,
