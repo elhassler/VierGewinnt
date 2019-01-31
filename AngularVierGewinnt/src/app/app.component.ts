@@ -22,6 +22,7 @@ export class AppComponent {
       this.loggedIn=true;
     }
   }
+  
   logout(){
    
     this.loggedIn=false;

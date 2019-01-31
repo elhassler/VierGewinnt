@@ -31,16 +31,16 @@ export class RegistrationComponent implements OnInit {
     let password2 = target.querySelector("#pw3").value 
 
   if(!firstname.match("^[A-z]+$") || !surname.match("^[A-z]+$")) {
-    console.log("nur Buchstaben erlaubt");
+    console.log("only letters allowed");
     this.dialog.openInfoDialog("Invalid Input","Only letters allowed for: firstname and surname!");
   } else if(!username.match("^[A-z0-9]+$")) {  
-    console.log("nur Buchstaben und Zahlen erlaubt");
+    console.log("Only letters and numbers allowed");
     this.dialog.openInfoDialog("Invalid Input","Only letters and numbers allowed for: username!");
   } else if(password1 != password2) {
-    console.log("Passwörter stimmen nicht überein");
+    console.log("passwords do not match");
     this.dialog.openInfoDialog("Invalid Input","Passwords do not match!");
   } else if(!val(password1)){
-    console.log("SQL Zeichen wurden gefunden") 
+    console.log("SQL symbols not allowed") 
     this.dialog.openInfoDialog("Invalid Input","Do NOT use restricted Symbols (in Password) (SQL/HTML MetaSymbols)!");
   } else {
     let jsonO={
@@ -60,7 +60,7 @@ export class RegistrationComponent implements OnInit {
       console.log('error during post is '+error.error.message);
       if(error.error.message.startsWith("ER_DUP_ENTRY")){
         this.dialog.openInfoDialog("Error","Username already taken!");
-        console.log("Nutzer bereits vorhanden");
+        console.log("User already taken");
       }else{
         this.dialog.openInfoDialog("Error",error.error.message);
       }

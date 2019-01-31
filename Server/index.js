@@ -91,6 +91,7 @@ app.post("/login", (req, res) => {
 }   
 });
 
+//REGISTRATION
 
 app.post("/registration", (req, res) => {   
     console.log(req.body);
@@ -117,6 +118,8 @@ app.post("/registration", (req, res) => {
 }  //} }
 }
 );
+
+//LOGOUT
 
 app.post("/logout",(req, res) => {
     console.log("Logout:"+req.body.username);
