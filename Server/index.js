@@ -141,6 +141,7 @@ app.post("/logout",(req, res) => {
                         });
                         if(gameRooms.includes(req.body.username)){
                             gameRooms.splice( gameRooms.indexOf(req.body.username), 1 );
+                            updateGameListEmit('remove',req.body.username);
                         }
 
                     }
